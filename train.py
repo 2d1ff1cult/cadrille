@@ -6,6 +6,8 @@ import torch
 from torch.utils.data import ConcatDataset
 from transformers import AutoProcessor, Trainer, TrainingArguments, TrainerCallback
 
+# from torch.nn.attention import SDPBackend, sdpa_kernel
+
 from cadrille import Cadrille, collate
 from dataset import Text2CADDataset, CadRecodeDataset
 
@@ -22,7 +24,7 @@ class PrintToFileCallback(TrainerCallback):
 
 
 def run(data_path, log_path, mode, use_text):
-    cad_recode_path = os.path.join(data_path, 'cad-recode-v1.5')
+    cad_recode_path = os.path.join(data_path, 'text2cad')
     train_dataset = CadRecodeDataset(
         root_dir=cad_recode_path,
         split='train',
@@ -58,15 +60,32 @@ def run(data_path, log_path, mode, use_text):
         mode=mode)
     
     processor = AutoProcessor.from_pretrained(
-        'Qwen/Qwen2-VL-2B-Instruct', 
+        # Uncomment the following line to use a different model
+        # "Qwen/Qwen2.5-VL-32B-Instruct",
+        # "Qwen/Qwen2.5-VL-7B-Instruct",
+        "Qwen/Qwen2-VL-7B-Instruct",
         min_pixels=256 * 28 * 28, 
         max_pixels=1280 * 28 * 28,
         padding_side='left')
     model = Cadrille.from_pretrained(
-        'Qwen/Qwen2-VL-2B-Instruct',
+        # Uncomment the following line to use a different model
+        # "Qwen/Qwen2.5-VL-32B-Instruct",
+        # "Qwen/Qwen2.5-VL-7B-Instruct",
+        "Qwen/Qwen2-VL-7B-Instruct",
         torch_dtype=torch.bfloat16,
-        attn_implementation='flash_attention_2')
+        attn_implementation='sdpa' # comment when using torch.nn.attention.SDPBackend.MATH
+    )
+    # class SDPAWrapper(torch.nn.Module):
+    #     def __init__(self, model, backend=SDPBackend.MATH):  # or FLASH_ATTENTION
+    #         super().__init__()
+    #         self.model = model
+    #         self.backend = backend
+
+    #     def forward(self, *args, **kwargs):
+    #         with sdpa_kernel(self.backend):
+    #             return self.model(*args, **kwargs)
     trainer = Trainer(
+        # model=SDPAWrapper(model),
         model=model,
         args=TrainingArguments(
             output_dir=log_path,

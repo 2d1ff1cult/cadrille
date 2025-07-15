@@ -6,6 +6,7 @@
 :: add to path
 :: done and restart all terminals
 
+:: ./
 dir
 pause
 :: useful when training
@@ -50,6 +51,8 @@ cd flash-attention
 py -3.10 setup.py install
 pause
 cd ../
+
+:: ./
 dir
 pause
 
@@ -65,7 +68,9 @@ dir
 pause
 
 python setup.py install
-:: cd ../
+cd ../
+
+:: ./
 dir
 pause
 
@@ -107,11 +112,17 @@ curl -L "https://huggingface.co/nvidia/PartPacker/resolve/main/flow.pt" --output
 
 echo Changing back to directory of this script
 cd ../../
+
+:: ./
 dir
 pause
 
 :: ------------------------- SETTING UP CADRILLE FROM SOURCE -------------------------
 git clone https://github.com/2d1ff1cult/cadrille.git
+
+:: ./
+dir
+pause
 
 cd cadrille
 

@@ -115,11 +115,13 @@ git clone https://github.com/2d1ff1cult/cadrille.git
 
 cd cadrille
 
+py -3.10 imports.py
+
 cd data
-git clone https://huggingface.co/datasets/filapro/cad-recode-v1.5
-git clone https://huggingface.co/datasets/maksimko123/text2cad
-git clone https://huggingface.co/datasets/maksimko123/fusion360_test_mesh
-git clone https://huggingface.co/datasets/maksimko123/deepcad_test_mesh
+:: git clone https://huggingface.co/datasets/filapro/cad-recode-v1.5
+:: git clone https://huggingface.co/datasets/maksimko123/text2cad
+:: git clone https://huggingface.co/datasets/maksimko123/fusion360_test_mesh
+:: git clone https://huggingface.co/datasets/maksimko123/deepcad_test_mesh
 
 cd ../
 :: create train/val pickles

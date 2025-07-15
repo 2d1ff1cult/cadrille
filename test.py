@@ -19,7 +19,7 @@ def run(data_path, split, mode, checkpoint_path, py_path):
     model = Cadrille.from_pretrained(
         checkpoint_path,
         torch_dtype=torch.bfloat16,
-        attn_implementation='flash_attention_2',
+        attn_implementation='sdpa',
         device_map='auto')
 
     processor = AutoProcessor.from_pretrained(

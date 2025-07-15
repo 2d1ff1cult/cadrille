@@ -1,0 +1,8 @@
+Requirement already satisfied: ninja in c:\users\moonwalker\appdata\local\programs\python\python310\lib\site-packages (1.11.1.4)
+Requirement already satisfied: pybind11 in c:\users\moonwalker\appdata\local\programs\python\python310\lib\site-packages (2.13.6)
+Collecting cmake
+  Downloading cmake-4.0.3-py3-none-win_amd64.whl.metadata (6.3 kB)
+Downloading cmake-4.0.3-py3-none-win_amd64.whl (36.9 MB)
+   ---------------------------------------- 36.9/36.9 MB 15.3 MB/s eta 0:00:00
+Installing collected packages: cmake
+Successfully installed cmake-4.0.3

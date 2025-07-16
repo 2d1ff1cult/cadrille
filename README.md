@@ -1,25 +1,7 @@
 ## `cadrille`: Multi-modal CAD Reconstruction with Online Reinforcement Learning
 
-**News**:
- * :fire: May, 2025. `cadrille` is state-of-the-art in three CAD reconstruction benchmarks: <br>
-  DeepCAD [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/cadrille-multi-modal-cad-reconstruction-with/cad-reconstruction-on-deepcad)](https://paperswithcode.com/sota/cad-reconstruction-on-deepcad?p=cadrille-multi-modal-cad-reconstruction-with) <br>
-  Fusion360 [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/cadrille-multi-modal-cad-reconstruction-with/cad-reconstruction-on-fusion-360-gallery)](https://paperswithcode.com/sota/cad-reconstruction-on-fusion-360-gallery?p=cadrille-multi-modal-cad-reconstruction-with) <br>
-  CC3D [![PWC](https://img.shields.io/endpoint.svg?url=https://paperswithcode.com/badge/cadrille-multi-modal-cad-reconstruction-with/cad-reconstruction-on-cc3d)](https://paperswithcode.com/sota/cad-reconstruction-on-cc3d?p=cadrille-multi-modal-cad-reconstruction-with) <br>
- 
-This repository contains an implementation of `cadrille`, a multi-modal (point clouds / images / text) 3D CAD reconstruction method introduced in our paper:
-
-> **cadrille: Multi-modal CAD Reconstruction with Online Reinforcement Learning**<br>
-> [Maksim Kolodiazhnyi](https://github.com/col14m),
-> [Denis Tarasov](https://dt6a.github.io),
-> [Dmitrii Zhemchuzhnikov](https://github.com/zhemdi),
-> [Alexander Nikulin](https://howuhh.github.io),
-> [Ilya Zisman](https://zis.mn),
-> [Anna Vorontsova](https://highrut.github.io),
-> [Anton Konushin](https://scholar.google.com/citations?user=ZT_k-wMAAAAJ),
-> [Vladislav Kurenkov](https://dunnolab.ai),
-> [Danila Rukhovich](https://github.com/filaPro) <br>
-> AIRI Institute <br>
-> https://arxiv.org/abs/2505.22914
+### Some notes from fork:
+Ran into OOM errors with original train script, the one here has been modified
 
 ### Installation
 
@@ -54,21 +36,4 @@ python evaluate.py
 <p align="center">
   <img src="https://github.com/user-attachments/assets/d6ae21f5-6c3c-4b7b-a2e9-ff0a310caa3d" alt="cadrille predictions"/>
 </p>
-
-### Citation
-
-If you find this work useful for your research, please cite our paper:
-
-```
-@article{kolodiazhnyi2025cadrille,
-  title={cadrille: Multi-modal CAD Reconstruction with Online Reinforcement Learning},
-  author={Maksim Kolodiazhnyi, Denis Tarasov, Dmitrii Zhemchuzhnikov, Alexander Nikulin, Ilya Zisman, Anna Vorontsova, Anton Konushin, Vladislav Kurenkov, Danila Rukhovich},
-  journal={arXiv preprint arXiv:2505.22914},
-  year={2025}
-}
-```
-
-### Acknowledgments
-
-<span>This work was supported by [Artificial Intelligence Research Institute](https://airi.net/?force=en) <img src="https://github.com/user-attachments/assets/c6304076-153a-4e3b-b58c-db522f7f78fe" width="50"/></span>
 

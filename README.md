@@ -5,7 +5,7 @@
 Ran into OOM errors with original train script, the one here has been modified
 
 # Usage
-The `chat_cadrille.py` script is the biggest difference from the original repo. Simply run the py script (assuming you've cloned [JPL-Su2025-2d3dgen]((https://github.com/2d1ff1cult/JPL-Su2025-2d3dgen/)))
+The `chat_cadrille.py` script is the biggest difference from the original repo. Simply run the py script (assuming you've cloned [JPL-Su2025-2d3dgen](https://github.com/2d1ff1cult/JPL-Su2025-2d3dgen/))
 
 Previously, it was used as a chatbot, but due to fine-tuning, it has lost that capability. **Still working out how to best carry on with the inference**
 

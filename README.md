@@ -21,10 +21,14 @@ To start training run *train.py* script:
 python train.py --mode pc_img --use-text
 ```
 
-During the development process at JPL, a run lasting 50000 steps was done. The model's weights can be downloaded [here](https://drive.google.com/file/d/1BruYqOSxopopnFzmamtf7sndgatXcf2p/view?usp=sharing). For some metrics, a cross-entropy loss of 0.20 was achieved.
+During the development process at JPL, a run lasting 50000 steps was done. The model's weights can be downloaded here: [checkpoint-50000](https://drive.google.com/file/d/1BruYqOSxopopnFzmamtf7sndgatXcf2p/view?usp=sharing). For some metrics, a cross-entropy loss of 0.20 was achieved.
 
 At evaluation (see below for more information), the following metrics were gathered:
-# insert training metrics here lol
+## `checkpoint-50000`
+mean iou: 0.822 median cd: 0.227
+
+## `maksimko123/cadrille`
+mean iou: 0.823 median cd: 0.203
 
 To disable some of the modalities set *--mode* to *img* or *pc*, or disable *--use-text*. We don't provide RL fine-tuning code for now. Alternatively both [SFT](https://huggingface.co/maksimko123/cadrille) and [RL](https://huggingface.co/maksimko123/cadrille-rl) models can be downloaded from :hugs: HuggingFace.
 

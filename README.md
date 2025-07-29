@@ -20,7 +20,7 @@ Previously, it was used as a chatbot, but due to fine-tuning, it has lost that c
 
 ## Pre-Training :fire:
 ## IMPORTANT! 
-Please review https://github.com/2d1ff1cult/JPL-Su2025-2d3dgen for pre-training steps. This is important to prepare the datasets if you plan to retrain!
+Please review https://github.com/2d1ff1cult/JPL-Su2025-2d3dgen for pre-training steps. This is important to prepare the datasets if you plan to retrain! The necessary preparation **should have been done** by `bootstrap.bat` so please review that script if you run into training issues!
 
 ## Train 💪
 To start training on only meshes run *train.py* script:

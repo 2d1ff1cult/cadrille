@@ -50,6 +50,10 @@ To evaluate IoU, invalidity ratio, and chamfer distance run *evaluate.py* script
 ```shell
 python evaluate.py
 ```
+## TODO list
+- retrain Qwen on a higher parameter model
+- edit `cadquery2mesh.py` which processes Neur11092 dataset
+- edit `prepare_data.py` to properly make pickles from Neur11092 dataset
 
 <p align="center">
   <img src="https://github.com/user-attachments/assets/8b811b14-e646-48d6-9a0c-06a9655bdbaf" alt="cadrille scheme"/>

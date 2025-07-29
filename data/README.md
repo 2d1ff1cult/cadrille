@@ -1,6 +1,7 @@
 
-Ensure *git-lsf* is installed and *git clone* the datasets from our :hugs: HuggingFace.
+Ensure *git-lfs* is installed and *git clone* the datasets from our :hugs: HuggingFace.
 
+### prepare_data.py, which makes pickles, MUST be edited to use the NeurIPS11092 dataset!!!
 
 - DeepCAD [test](https://huggingface.co/datasets/maksimko123/deepcad_test_mesh). Meshes are produced by official DeepCAD [script](https://github.com/ChrisWu1997/DeepCAD/blob/master/dataset/json2pc.py) and normalized to the unit cube.
 - Fusion360 [test](https://huggingface.co/datasets/maksimko123/fusion360_test_mesh). Meshes are downloaded from [link](https://github.com/AutodeskAILab/Fusion360GalleryDataset/blob/master/docs/reconstruction.md#traintest-split) and normalized to unit cube.
@@ -40,7 +41,7 @@ data
     ├── 0.stl
     └── ...
 
-NEW dataset (as of 7/28/2025)
+The format of the NEW dataset (as of 7/28/2025) SHOULD be as follows:
 data
 └── CadQuery
     ├── train
@@ -53,6 +54,23 @@ data
         ├── 0.py
         ├── 0.stl
         └── ...
+    ├── train.pkl
+    └── val.pkl
+```
+
+However, the actual format is more like:
+```
+stlcq
+└── 0000
+    ├── 0.stl
+    └── ...
+data
+└── CadQuery
+    ├── train
+        ├── 0000
+            ├── 0.py
+    ├── val
+        ├── 0.py
     ├── train.pkl
     └── val.pkl
 ```

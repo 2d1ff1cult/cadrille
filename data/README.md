@@ -7,6 +7,9 @@ Ensure *git-lsf* is installed and *git clone* the datasets from our :hugs: Huggi
 - Text2CAD [train / val / test](https://huggingface.co/datasets/maksimko123/text2cad). Text prompts are downloaded from [link](https://github.com/SadilKhan/Text2CAD?tab=readme-ov-file#-data-preparation) and shortened a bit. We also provide CadQuery codes for almost all DeepCAD examples.
 - CAD-Recode [train / val](https://huggingface.co/datasets/filapro/cad-recode-v1.5). To convert CadQuery programs to meshes before training run *cadrecode2mesh.py* script.
 
+# REVIEW: ORIGINAL DEVS MAY HAVE MADE TYPO??
+Please note that the below folder structure does **NOT** follow the original devs'
+
 Overall data structure should be as follows:
 ```
 data
@@ -23,17 +26,33 @@ data
         └── ...
     ├── train.pkl
     └── val.pkl
-    ├── text2cad
-        ├── cadquery
+└── text2cad
+    ├── cadquery
+        ├── 0.py
+        └── ...
+    ├── train.pkl
+    ├── val.pkl
+    └── test.pkl
+└── deepcad_test_mesh
+    ├── 0.stl
+    └── ...
+└── fusion360_test_mesh
+    ├── 0.stl
+    └── ...
+
+NEW dataset (as of 7/28/2025)
+data
+└── CadQuery
+    ├── train
+        ├── 0000
             ├── 0.py
+            ├── 0.stl
             └── ...
-        ├── train.pkl
-        ├── val.pkl
-        └── test.pkl
-    ├── deepcad_test_mesh
+        └── ...
+    ├── val
+        ├── 0.py
         ├── 0.stl
         └── ...
-    └── fusion360_test_mesh
-        ├── 0.stl
-        └── ...
+    ├── train.pkl
+    └── val.pkl
 ```

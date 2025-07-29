@@ -50,6 +50,8 @@ To evaluate IoU, invalidity ratio, and chamfer distance run *evaluate.py* script
 ```shell
 python evaluate.py
 ```
+This assess the Python scripts in tmp_py by generating meshes and measuring CD and IoU vs. the ground truth meshes
+
 ## TODO list
 - retrain Qwen on a higher parameter model
 - edit `cadquery2mesh.py` which processes Neur11092 dataset

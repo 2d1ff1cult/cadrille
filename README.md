@@ -40,7 +40,7 @@ See `train.py` for more flags, if so desired
 During the development process at JPL, a run lasting 50000 steps was done. The model's weights can be downloaded here: [checkpoint-50000](https://drive.google.com/file/d/1BruYqOSxopopnFzmamtf7sndgatXcf2p/view?usp=sharing). For some metrics, a cross-entropy loss of 0.20 was achieved.
 
 At evaluation (see below for more information), the following metrics were gathered:
-### `checkpoint-50000`
+### `checkpoint-50000` using `Qwen/Qwen2-VL-2B-Instruct`
 mean iou: 0.822 median cd: 0.227
 
 ### `maksimko123/cadrille`

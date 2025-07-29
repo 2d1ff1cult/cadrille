@@ -20,7 +20,7 @@ import evaluate
 from dataset import Text2CADDataset, CadRecodeDataset
 from cadrille import Cadrille, collate
 
-def load_model_and_processor(model_name, mode): # can also use path to checkpoint
+def load_model_and_processor(model_name): # can also use path to checkpoint
     """
     Load the pretrained Cadrille model and processor from Hugging Face.
     """
@@ -43,7 +43,7 @@ def load_model_and_processor(model_name, mode): # can also use path to checkpoin
     return processor, model
 
 # generate a point cloud from a mesh file
-def process_mesh_to_point_cloud(mesh_path, n_points, n_pre_points=8192, mode='pc'):
+def process_mesh_to_point_cloud(mesh_path, n_points, n_pre_points=1024, mode='pc'):
     mesh = trimesh.load_mesh(mesh_path, force='mesh')
     vertices, _ = trimesh.sample.sample_surface(mesh, n_pre_points)
     _, ids = sample_farthest_points(torch.tensor(vertices).unsqueeze(0), K=n_points)
@@ -129,6 +129,7 @@ def py_file_to_mesh_file(pyfile):
         compound = globals()['r'].val()
         mesh = compound_to_mesh(compound)
         mesh.export(pyfile[:-3] + '.stl')
+        print(f"Mesh file saved to {pyfile[:-3] + '.stl'}")
     except:
         pass
 
@@ -144,6 +145,8 @@ def get_metrics(gt_mesh_path, stlfile, n_points):
     print(f"Metrics for {stlfile}:")
     print(f"  IoU: {iou}")
     print(f"  Chamfer Distance: {cd}")
+    iou = float(iou)
+    cd = float(cd)
     return iou, cd
 
 def validate(pyfile):
@@ -167,15 +170,13 @@ def validate(pyfile):
         raise InvalidScript()
 
 def main():
+    class InvalidMesh(Exception):
+        pass
     parser = argparse.ArgumentParser(description="2d3dgen: text or batch 3D mesh mode.",
                                      epilog="NOTE: N_points can be adjusted, but 256 is optimal. Any more and the outputs are in a different language :)")
     parser.add_argument("--model", type=str, default='maksimko123/cadrille',
                         help="Model: Specify which model to use (default maksimko123/cadille).\n"
                         "When using a local path, format as: './path/to/model/checkpoint/'.")
-    parser.add_argument("--mode", choices=["text", "3d"], required=True,
-                        help="Mode: 'text' for prompt, '3d' for mesh/batch mode.")
-    parser.add_argument("--prompt", type=str,
-                        help="Text description for CadQuery generation (text mode).")
     parser.add_argument("--mesh", type=str,
                         help="Single mesh file path for CadQuery generation (3d mode).")
     parser.add_argument("--mesh_dir", type=str,
@@ -184,7 +185,7 @@ def main():
                         help="Directory to save generated CadQuery scripts.")
     parser.add_argument("--n_points", type=int, default=256,
                         help='Specify n sample points (default 256)')
-    parser.add_argument("--max_retries", type=int, default=5,
+    parser.add_argument("--max_retries", type=int, default=50,
                         help='Specify max retries (default 5)')
     parser.add_argument("--token_size", type=int, default=768,
                         help='Specify token size (default 768)')
@@ -193,57 +194,57 @@ def main():
     torch.cuda.empty_cache()
     print("Cleared CUDA cache.")
     
-    processor, model = load_model_and_processor(args.model, args.mode)
+    processor, model = load_model_and_processor(args.model)
     os.makedirs(args.output_dir, exist_ok=True)
     if(args.token_size < args.n_points):
         print(f"[**WARNING**]: token_size {args.token_size} is less than n_points {args.n_points}. "
               "This may lead to unexpected results. Consider increasing token_size or reducing n_points.")
-    if args.mode == "text":
-        user_prompt = args.prompt or input("Enter text prompt: ")
-        # # When in text mode, the original prompt is `build_prompt_text(user_prompt)`.
-        # original_prompt = build_prompt_text(user_prompt)
-        # raw = generate_cadquery_script(processor, model, "text", user_prompt)
-        # # final = postprocess_script(raw, original_prompt_text=original_prompt)
-        # final = generate_cadquery_script(processor, model, "text", user_prompt)
-        # print("\nGenerated CadQuery script:\n")
-        # print(final)
-    else:  # 3d mode
-        if args.mesh_dir:
-            for fname in os.listdir(args.mesh_dir):
-                if fname.lower().endswith(('.ply', '.stl')):
-                    mesh_path = os.path.join(args.mesh_dir, fname)
-                    generate_cadquery_script_from_3d(processor, 
-                                                    model, 
-                                                    args.token_size,
-                                                    mesh_path, 
-                                                    args.output_dir, 
-                                                    args.n_points)
-          
-        elif args.mesh:
-            # uncomment below to view the point cloud
-            view_point_cloud(process_mesh_to_point_cloud(args.mesh, args.n_points), args.mesh)
-            for retry in range(1, args.max_retries + 1):
-                try:
-                    print(f"------------- Attempt {retry} -------------\n")
-                    generate_cadquery_script_from_3d(processor, 
-                                                    model, 
-                                                    args.token_size,
-                                                    args.mesh, 
-                                                    args.output_dir, 
-                                                    args.n_points)
-                    pyfile = os.path.join(args.output_dir, f"cadquery_{os.path.splitext(os.path.basename(args.mesh))[0]}.py")
-                    stlfile = os.path.join(args.output_dir, f"cadquery_{os.path.splitext(os.path.basename(args.mesh))[0]}.stl")
-                    validate(pyfile)
-                    py_file_to_mesh_file(pyfile)
-                    # view_script_mesh(pyfile)
-                    cd, iou = get_metrics(args.mesh, stlfile, args.n_points)
-                    if cd is not None and iou is not None:
-                        break
+
+    if args.mesh_dir:
+        for fname in os.listdir(args.mesh_dir):
+            if fname.lower().endswith(('.ply', '.stl')):
+                mesh_path = os.path.join(args.mesh_dir, fname)
+                generate_cadquery_script_from_3d(processor, 
+                                                model, 
+                                                args.token_size,
+                                                mesh_path, 
+                                                args.output_dir, 
+                                                args.n_points)
+        
+    elif args.mesh:
+        # uncomment below to view the point cloud
+        view_point_cloud(process_mesh_to_point_cloud(args.mesh, args.n_points), args.mesh)
+        for retry in range(1, args.max_retries + 1):
+            try:
+                print(f"------------- Attempt {retry} -------------\n")
+                generate_cadquery_script_from_3d(processor, 
+                                                model, 
+                                                args.token_size,
+                                                args.mesh, 
+                                                args.output_dir, 
+                                                args.n_points)
+                pyfile = os.path.join(args.output_dir,
+                                      f"cadquery_{os.path.splitext(os.path.basename(args.mesh))[0]}.py")
+                stlfile = os.path.join(args.output_dir,
+                                       f"cadquery_{os.path.splitext(os.path.basename(args.mesh))[0]}.stl")
+                validate(pyfile)
+                py_file_to_mesh_file(pyfile)
+                # view_script_mesh(pyfile)
+                iou, cd = get_metrics(args.mesh, stlfile, args.n_points)
+                if cd <= 1 and iou >= 0.5:
+                    print(f"Valid mesh. Cadquery script written to {pyfile}\n")
                     break
-                except Exception as e:
-                    print(f"Attempt {retry}: Error occurred - {e}. Retrying...\n")
+                else:
+                    print((f"Low metrics: CD={cd}, IoU={iou}. Retrying..."))
+                    raise InvalidMesh(f"Low metrics: CD={cd}, IoU={iou}")
+            except InvalidMesh as i:
+                print(f"Invalid mesh generated: {i}")
+                continue
+            except Exception as e:
+                print(f"Error occurred - {e}. Retrying...\n")
+                continue
         else:
-            print("Error: In 3d mode, specify --mesh or --mesh_dir")
+            print(f"Failed to generate valid CadQuery script after {args.max_retries} attempts.")
 
 if __name__ == "__main__":
     main()

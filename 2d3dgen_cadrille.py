@@ -32,6 +32,7 @@ def load_model_and_processor(model_name): # can also use path to checkpoint
         "Qwen/Qwen2-VL-2B-Instruct",
         min_pixels=256 * 28 * 28, 
         max_pixels=1280 * 28 * 28,
+        padding_side='left',
         use_fast=True
     )
     model = Cadrille.from_pretrained(
@@ -66,6 +67,7 @@ def generate_cadquery_script_from_3d(processor, model, token_size, mesh_path, ou
 
     mesh = process_mesh_to_point_cloud(mesh_path, n_points)
 
+    # the reason for poor metrics might stem from here...
     example = {
       "point_cloud": mesh,
       "description": "Generate CadQuery code",
@@ -73,6 +75,7 @@ def generate_cadquery_script_from_3d(processor, model, token_size, mesh_path, ou
       "answer":         ""
     }
 
+    # ...and here
     mesh = collate(
         [example], 
         processor, 

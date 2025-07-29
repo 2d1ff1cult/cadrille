@@ -15,6 +15,7 @@ def py_file_to_mesh_file(py_path):
     try:
         with open(py_path, 'r') as f:
             py_string = f.read()
+            
         exec(py_string, globals())
         compound = globals()['r'].val()
         mesh = compound_to_mesh(compound)
@@ -48,4 +49,4 @@ def run(path):
 
 
 if __name__ == '__main__':
-    run('./cad-recode-v1.5')
+    run('./CadQuery')

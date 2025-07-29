@@ -26,9 +26,11 @@ Also, see `./data` for notes on the new dataset `CadQuery`
 TL;DR, `prepare_data.py` would need to be changed to accomodate the weird way the dataset outputs the `.stl` files
 
 ## Train 💪
-To start training on only meshes run *train.py* script:
+To start training on only meshes run *train2b.py* or *train7b.py* script:
+*2b and 7b stand for the model being used, with each script varying in optimization for the given model size
+As of writing, `train7b.py` is NOT optimized for 7 billion parameter training. Only 2B trains as intended, achieving about 1.0 s/it during training
 ```shell
-python train.py --mode pc
+python train2b.py --mode pc
 ```
 
 For training with text dataset:

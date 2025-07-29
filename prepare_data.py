@@ -1,95 +1,121 @@
 # prepare_data.py
+
 import os
 import pickle
 
-def build_cad_recode_pkl(root_dir, split):
+
+def build_cad_recode_pkl(dataset_dir: str, split: str):
     """
-    cad-recode-v1.5 has:
-      root_dir/train/batch_XX/*.py
-      root_dir/val/*.py
+    Scan cad-recode-v1.5/{split} and write {split}.pkl with entries:
+      - mesh_path (for .stl files)
+      - py_path   (for .py scripts)
+      - uid
     """
-    split_dir = os.path.join(root_dir, split)
-    records = []
-    for dirpath, _, filenames in os.walk(split_dir):
-        rel_dir = os.path.relpath(dirpath, root_dir)
-        for fname in filenames:
+    print(f"Building cad-recode-v1.5 {split}.pkl")
+    data = []
+    split_dir = os.path.join(dataset_dir, split)
+
+    if split == "train":
+        for batch in sorted(os.listdir(split_dir)):
+            batch_path = os.path.join(split_dir, batch)
+            if not os.path.isdir(batch_path):
+                continue
+            for fname in os.listdir(batch_path):
+                if not fname.endswith(".stl"):
+                    continue
+                uid = fname[:-4]
+                data.append({
+                    "mesh_path": os.path.join(split, batch, fname),
+                    "py_path":   os.path.join(split, batch, uid + ".py"),
+                    "uid": uid
+                })
+
+    elif split == "val":
+        for fname in os.listdir(split_dir):
+            if not fname.endswith(".stl"):
+                continue
             uid = fname[:-4]
-            records.append({
-                "uid": uid,
-                # "mesh_path": os.path.join(rel_dir, fname),
-                "py_path":   os.path.join(rel_dir, uid + ".py")
+            data.append({
+                "mesh_path": os.path.join(split, fname),
+                "py_path":   os.path.join(split, uid + ".py"),
+                "uid": uid
             })
-    out_path = os.path.join(root_dir, f"{split}.pkl")
+
+    out_path = os.path.join(dataset_dir, f"{split}.pkl")
     with open(out_path, "wb") as f:
-        pickle.dump(records, f)
-    print(f"Wrote {len(records)} records to {out_path}")
+        pickle.dump(data, f)
+    print(f"Wrote {len(data)} records to {out_path}")
 
-def build_text2cad_pkl(root_dir):
-    """
-    text2cad has train/val/test splits each with:
-      cadquery/*.py
-      meshes/*.stl
-    """
-    for split in ("train", "val", "test"):
-        split_dir = os.path.join(root_dir, split)
-        cad_dir = os.path.join(split_dir, "cadquery")
-        mesh_dir = os.path.join(split_dir, "meshes")
-        if not os.path.isdir(split_dir):
-            print(f"Skipping missing {split_dir}")
-            continue
 
-        records = []
-        for py_file in sorted(os.listdir(cad_dir)):
-            if not py_file.endswith(".py"):
-                continue
-            uid = py_file[:-3]
-            stl_file = uid + ".stl"
-            stl_path = os.path.join(mesh_dir, stl_file)
-            if not os.path.exists(stl_path):
-                print(f"  warning: missing mesh for {uid}")
-                continue
-            records.append({
-                "uid": uid,
-                "description": "Generate cadquery code",
-                "py_path": os.path.join(split, "cadquery", py_file),
-                "mesh_path": os.path.join(split, "meshes", stl_file)
-            })
-
-        out_path = os.path.join(root_dir, f"{split}.pkl")
-        with open(out_path, "wb") as f:
-            pickle.dump(records, f)
-        print(f"Wrote {len(records)} records to {out_path}")
-
-def build_mesh_only_pkl(root_dir):
+def build_mesh_list_pkl(dataset_dir: str):
     """
-    For fusion360_test_mesh/ and deepcad_test_mesh/ (just .stl files).
+    For a folder of standalone .stl files, write train.pkl listing each mesh_path and uid.
     """
-    records = []
-    for fname in sorted(os.listdir(root_dir)):
+    print(f"Building mesh list for {dataset_dir}")
+    data = []
+    for fname in os.listdir(dataset_dir):
         if fname.endswith(".stl"):
-            records.append({
-                "uid": fname[:-4],
-                "mesh_path": fname
+            data.append({
+                "mesh_path": fname,
+                "uid": fname[:-4]
             })
-    out_path = os.path.join(root_dir, "train.pkl")
+    out_path = os.path.join(dataset_dir, "train.pkl")
     with open(out_path, "wb") as f:
-        pickle.dump(records, f)
-    print(f"Wrote {len(records)} records to {out_path}")
+        pickle.dump(data, f)
+    print(f"Wrote {len(data)} records to {out_path}")
+
+def build_cadquery_pkl(dataset_dir: str, split: str):
+    """
+    Scan CadQuery/{split} and write {split}.pkl with entries:
+      - mesh_path (for .stl files)
+      - py_path   (for .py scripts)
+      - uid
+    """
+    print(f"Building CadQuery {split}.pkl")
+    data = []
+    split_dir = os.path.join(dataset_dir, split)
+
+    if split == "train":
+        for batch in sorted(os.listdir(split_dir)):
+            batch_path = os.path.join(split_dir, batch)
+            if not os.path.isdir(batch_path):
+                continue
+            for fname in os.listdir(batch_path):
+                if not fname.endswith(".stl"):
+                    continue
+                uid = fname[:-4]
+                data.append({
+                    "mesh_path": os.path.join(split, batch, fname),
+                    "py_path":   os.path.join(split, batch, uid + ".py"),
+                    "uid": uid
+                })
+
+    elif split == "val":
+        for fname in os.listdir(split_dir):
+            if not fname.endswith(".stl"):
+                continue
+            uid = fname[:-4]
+            data.append({
+                "mesh_path": os.path.join(split, fname),
+                "py_path":   os.path.join(split, uid + ".py"),
+                "uid": uid
+            })
+
+    out_path = os.path.join(dataset_dir, f"{split}.pkl")
+    with open(out_path, "wb") as f:
+        pickle.dump(data, f)
+    print(f"Wrote {len(data)} records to {out_path}")
 
 if __name__ == "__main__":
-    data_root = "./data"
+    root = "./data"
 
-    # cad-recode
-    cad_root = os.path.join(data_root, "cad-recode-v1.5")
-    build_cad_recode_pkl(cad_root, "train")
-    build_cad_recode_pkl(cad_root, "val")
+    build_cad_recode_pkl(os.path.join(root, "cad-recode-v1.5"), "train")
+    build_cad_recode_pkl(os.path.join(root, "cad-recode-v1.5"), "val")
+    build_cadquery_pkl(os.path.join(root, "CadQuery"), "train")
+    build_cadquery_pkl(os.path.join(root, "CadQuery"), "val")
+    # text2cad already provides its own train/val/test .pkl, so we skip it here
 
-    # text2cad
-    text_root = os.path.join(data_root, "text2cad")
-    build_text2cad_pkl(text_root)
-
-    # fusion360 & deepcad
-    build_mesh_only_pkl(os.path.join(data_root, "fusion360_test_mesh"))
-    build_mesh_only_pkl(os.path.join(data_root, "deepcad_test_mesh"))
+    build_mesh_list_pkl(os.path.join(root, "fusion360_test_mesh"))
+    build_mesh_list_pkl(os.path.join(root, "deepcad_test_mesh"))
 
     print("All pickle files created.")

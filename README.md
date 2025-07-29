@@ -4,6 +4,9 @@
 ### Some notes from fork:
 Ran into OOM errors with original train script, the one here has been modified
 
+## Old notes
+View old versions of 2d3dgen_cadrille.py via the notebook [here](https://colab.research.google.com/drive/1SbPwzw1lmNEslnP4IQ-oNY9zkoXzJ1uj#scrollTo=tBdBSUPmR_f2)
+
 # Usage
 The `chat_cadrille.py` script is the biggest difference from the original repo. Simply run the py script (assuming you've cloned [JPL-Su2025-2d3dgen](https://github.com/2d1ff1cult/JPL-Su2025-2d3dgen/))
 

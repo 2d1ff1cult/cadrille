@@ -82,7 +82,8 @@ class CadRecodeDataset(Dataset):
             paths = os.listdir(os.path.join(self.root_dir, self.split))
             self.annotations = [
                 {'mesh_path': os.path.join(self.split, f)}
-                for f in paths if f.endswith('.stl')
+                # once support for plys is desired, uncomment the next line
+                for f in paths if f.endswith('.stl') # or f.endswith('.ply')
             ]
 
     def __len__(self):

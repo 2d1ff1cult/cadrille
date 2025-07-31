@@ -157,7 +157,8 @@ def OLD_generate_cadquery_script_from_3d(processor, model, token_size, mesh_path
 
     print(f"Cadquery script written to {out_file}\n")
 
-def generate_cadquery_script_from_3d(processor,
+# does not regenerate, do not use until fixed
+def WORKING_generate_cadquery_script_from_3d(processor,
                                      model,
                                      token_size,
                                      mesh_folder,
@@ -248,6 +249,155 @@ def generate_cadquery_script_from_3d(processor,
     # except Exception as e:
     #     print(f"Error occurred - {e}. Retrying...\n")
     #     continue
+
+def TEST_generate_cadquery_script_from_3d(processor,
+                                     model,
+                                     token_size,
+                                     mesh_folder,
+                                     output_path,
+                                     n_points,
+                                     max_retries):
+    dataset = CadRecodeDataset(
+        root_dir='./',
+        split=mesh_folder,
+        n_points=n_points,
+        normalize_std_pc=100,
+        noise_scale_pc=0.01,
+        img_size=128,
+        normalize_std_img=200,
+        noise_scale_img=-1,
+        num_imgs=4,
+        mode='pc')
+    batch_size = 32
+
+    n_samples = 1
+    dataloader = DataLoader(
+        dataset=ConcatDataset([dataset] * n_samples),
+        batch_size=batch_size,
+        num_workers=24,
+        collate_fn=partial(collate, processor=processor, n_points=256, eval=True))
+
+    for batch in tqdm(dataloader):
+        # Track which items in the batch still need successful generation
+        pending_items = list(range(len(batch['file_name'])))
+        successful_items = set()
+        
+        # Store batch items that need regeneration
+        items_to_retry = {}
+        for i, stem in enumerate(batch['file_name']):
+            items_to_retry[i] = {
+                'stem': stem,
+                'retry_count': 0,
+                'max_retries': max_retries
+            }
+        
+        while pending_items and any(items_to_retry[i]['retry_count'] < items_to_retry[i]['max_retries'] 
+                                   for i in pending_items):
+            
+            # Increment retry count for pending items
+            for i in pending_items:
+                items_to_retry[i]['retry_count'] += 1
+                retry_num = items_to_retry[i]['retry_count']
+                stem = items_to_retry[i]['stem']
+                print(f"------------------------- Attempt {retry_num}: {stem} -------------------------\n")
+            
+            # Generate new scripts for all pending items
+            generated_ids = model.generate(
+                input_ids=batch['input_ids'].to(model.device),
+                attention_mask=batch['attention_mask'].to(model.device),
+                point_clouds=batch['point_clouds'].to(model.device),
+                is_pc=batch['is_pc'].to(model.device),
+                is_img=batch['is_img'].to(model.device),
+                pixel_values_videos=batch['pixel_values_videos'].to(model.device) if batch.get('pixel_values_videos', None) is not None else None,
+                video_grid_thw=batch['video_grid_thw'].to(model.device) if batch.get('video_grid_thw', None) is not None else None,
+                max_new_tokens=token_size)
+            
+            generated_ids_trimmed = [
+                out_ids[len(in_ids):] for in_ids, out_ids in zip(batch['input_ids'], generated_ids)
+            ]
+            
+            py_strings = processor.batch_decode(
+                generated_ids_trimmed, 
+                skip_special_tokens=True, 
+                clean_up_tokenization_spaces=False
+            )
+            
+            # Process each pending item
+            newly_successful = []
+            
+            for i in pending_items:
+                stem = batch['file_name'][i]
+                py_string = py_strings[i]
+                retry_num = items_to_retry[i]['retry_count']
+                
+                # Check if script is empty
+                if not py_string.strip():
+                    print(f"Empty script generated for {stem}. Retrying... ({retry_num}/{max_retries})")
+                    continue
+                
+                py_name = f'cadquery_{stem}.py'
+                py_path = os.path.join(output_path, py_name)
+                
+                # Write the newly generated script
+                with open(py_path, 'w') as f:
+                    f.write(py_string)
+                
+                # Find ground truth mesh file
+                gtmesh = None
+                generated_stl = os.path.join(output_path, f"cadquery_{stem}.stl")
+                
+                for file in os.listdir(mesh_folder):
+                    name, ext = os.path.splitext(file)
+                    if name == stem:
+                        if ext in ['.glb', '.gltf', '.off']:
+                            print(f"Unsupported file type for {file}, skipping...")
+                            break
+                        gtmesh = os.path.join(mesh_folder, file)
+                        break
+                
+                if gtmesh is None:
+                    print(f"No supported ground truth mesh found for {stem}")
+                    continue
+                
+                # Validate and test the script
+                try:
+                    py_file_to_mesh_file(py_path)
+                    
+                    if not validate(py_path):
+                        print(f"Invalid script generated: {py_name}. Retrying... ({retry_num}/{max_retries})")
+                        continue
+                    
+                    iou, cd = get_metrics(gtmesh, generated_stl, n_points)
+                    
+                    if cd <= 1:  # and iou >= 0.2:
+                        view_script_mesh(generated_stl, gtmesh)
+                        print(f"Valid mesh. Cadquery script written to {py_name}\n")
+                        newly_successful.append(i)
+                    else:
+                        # for debugging purposes, comment below line for speed
+                        view_script_mesh(generated_stl, gtmesh)
+                        print(f"Low metrics: CD={cd}, IoU={iou}. Retrying... ({retry_num}/{max_retries})")
+                        continue
+                        
+                except Exception as e:
+                    print(f"Error processing {py_name}: {str(e)}. Retrying... ({retry_num}/{max_retries})")
+                    continue
+            
+            # Remove successful items from pending list
+            for i in newly_successful:
+                pending_items.remove(i)
+                successful_items.add(i)
+            
+            # Remove items that have exceeded max retries
+            pending_items = [i for i in pending_items 
+                           if items_to_retry[i]['retry_count'] < items_to_retry[i]['max_retries']]
+        
+        # Report final status
+        for i, stem in enumerate(batch['file_name']):
+            if i not in successful_items:
+                print(f"Failed to generate valid script for {stem} after {max_retries} attempts")
+    
+    print(f"Finished. All files located in {output_path}\n")
 
 def view_script_mesh(stlfile, gtmesh):
     """
@@ -388,7 +538,7 @@ def main():
               "This may lead to unexpected results. Consider increasing token_size or reducing n_points.")
     
     if args.mesh_dir:
-        generate_cadquery_script_from_3d(processor, 
+        TEST_generate_cadquery_script_from_3d(processor, 
                                         model, 
                                         args.token_size,
                                         args.mesh_dir, 
